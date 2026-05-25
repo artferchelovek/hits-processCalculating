@@ -1,78 +1,90 @@
-# Результаты лабораторной работы: Параллельные вычисления
+# Лабораторная работа: Параллельные вычисления (M4 Pro)
 
-## Таблица производительности (M4 Pro)
-
-| Картинка | Фильтр | Метод | Время (ms) |
+## 1. Сводная таблица производительности
+| Изображение | Фильтр | Метод | Среднее время (ms) |
 | :--- | :--- | :--- | :--- |
-| 300x300.png | inversion | Seq | 0.1967 |
-| 300x300.png | inversion | OMP | 0.6835 |
-| 300x300.png | inversion | SIMD | 0.0550 |
-| 300x300.png | inversion | OCL | 22.3843 |
-| 300x300.png | median | Seq | 63.5872 |
-| 300x300.png | median | OMP | 12.6365 |
-| 300x300.png | median | SIMD | 22.2931 |
-| 300x300.png | median | OCL | 21.9507 |
-| 300x300.png | edges | Seq | 7.3295 |
-| 300x300.png | edges | OMP | 2.1695 |
-| 300x300.png | edges | SIMD | 6.6504 |
-| 300x300.png | edges | OCL | 22.2540 |
-| 400x400.png | inversion | Seq | 0.7473 |
-| 400x400.png | inversion | OMP | 0.8245 |
-| 400x400.png | inversion | SIMD | 0.2427 |
-| 400x400.png | inversion | OCL | 23.5459 |
-| 400x400.png | median | Seq | 116.7740 |
-| 400x400.png | median | OMP | 20.5647 |
-| 400x400.png | median | SIMD | 42.0990 |
-| 400x400.png | median | OCL | 26.5105 |
-| 400x400.png | edges | Seq | 13.8455 |
-| 400x400.png | edges | OMP | 3.7302 |
-| 400x400.png | edges | SIMD | 12.6592 |
-| 400x400.png | edges | OCL | 21.1920 |
-| 500x500.png | inversion | Seq | 1.1290 |
-| 500x500.png | inversion | OMP | 0.9617 |
-| 500x500.png | inversion | SIMD | 0.3899 |
-| 500x500.png | inversion | OCL | 21.8567 |
-| 500x500.png | median | Seq | 174.2510 |
-| 500x500.png | median | OMP | 31.0832 |
-| 500x500.png | median | SIMD | 45.5833 |
-| 500x500.png | median | OCL | 23.8216 |
-| 500x500.png | edges | Seq | 21.6489 |
-| 500x500.png | edges | OMP | 5.2644 |
-| 500x500.png | edges | SIMD | 19.3540 |
-| 500x500.png | edges | OCL | 26.9982 |
-| 600x600.png | inversion | Seq | 1.6073 |
-| 600x600.png | inversion | OMP | 1.0308 |
-| 600x600.png | inversion | SIMD | 0.5512 |
-| 600x600.png | inversion | OCL | 22.5612 |
-| 600x600.png | median | Seq | 241.1180 |
-| 600x600.png | median | OMP | 37.7280 |
-| 600x600.png | median | SIMD | 49.1913 |
-| 600x600.png | median | OCL | 27.6045 |
-| 600x600.png | edges | Seq | 30.6395 |
-| 600x600.png | edges | OMP | 6.6085 |
-| 600x600.png | edges | SIMD | 27.9320 |
-| 600x600.png | edges | OCL | 22.2345 |
-| 950x950.png | inversion | Seq | 4.0663 |
-| 950x950.png | inversion | OMP | 1.7533 |
-| 950x950.png | inversion | SIMD | 1.3603 |
-| 950x950.png | inversion | OCL | 22.7797 |
-| 950x950.png | median | Seq | 658.8700 |
-| 950x950.png | median | OMP | 90.3323 |
-| 950x950.png | median | SIMD | 229.6050 |
-| 950x950.png | median | OCL | 24.9448 |
-| 950x950.png | edges | Seq | 78.2226 |
-| 950x950.png | edges | OMP | 15.5039 |
-| 950x950.png | edges | SIMD | 70.8436 |
-| 950x950.png | edges | OCL | 23.6127 |
-| 2400x2400.png | inversion | Seq | 28.8133 |
-| 2400x2400.png | inversion | OMP | 5.6763 |
-| 2400x2400.png | inversion | SIMD | 8.9409 |
-| 2400x2400.png | inversion | OCL | 30.1205 |
-| 2400x2400.png | median | Seq | 4230.8600 |
-| 2400x2400.png | median | OMP | 542.0500 |
-| 2400x2400.png | median | SIMD | 1418.2500 |
-| 2400x2400.png | median | OCL | 37.0583 |
-| 2400x2400.png | edges | Seq | 505.8870 |
-| 2400x2400.png | edges | OMP | 92.5738 |
-| 2400x2400.png | edges | SIMD | 453.7900 |
-| 2400x2400.png | edges | OCL | 27.7629 |
+| 90000 px | inversion | Seq | 0.2172 |
+| 90000 px | inversion | OMP | 0.8997 |
+| 90000 px | inversion | SIMD | 0.0554 |
+| 90000 px | inversion | OCL | 22.1466 |
+| 90000 px | median | Seq | 64.1901 |
+| 90000 px | median | OMP | 13.1805 |
+| 90000 px | median | SIMD | 22.1894 |
+| 90000 px | median | OCL | 21.9042 |
+| 90000 px | edges | Seq | 7.3396 |
+| 90000 px | edges | OMP | 2.8351 |
+| 90000 px | edges | SIMD | 6.8357 |
+| 90000 px | edges | OCL | 23.8387 |
+| 160000 px | inversion | Seq | 0.7165 |
+| 160000 px | inversion | OMP | 0.8227 |
+| 160000 px | inversion | SIMD | 0.2424 |
+| 160000 px | inversion | OCL | 22.2537 |
+| 160000 px | median | Seq | 116.6247 |
+| 160000 px | median | OMP | 20.0226 |
+| 160000 px | median | SIMD | 42.6994 |
+| 160000 px | median | OCL | 22.1677 |
+| 160000 px | edges | Seq | 14.0023 |
+| 160000 px | edges | OMP | 3.5514 |
+| 160000 px | edges | SIMD | 12.6596 |
+| 160000 px | edges | OCL | 21.1803 |
+| 250000 px | inversion | Seq | 1.1411 |
+| 250000 px | inversion | OMP | 0.9156 |
+| 250000 px | inversion | SIMD | 0.3803 |
+| 250000 px | inversion | OCL | 22.3940 |
+| 250000 px | median | Seq | 173.8283 |
+| 250000 px | median | OMP | 28.0995 |
+| 250000 px | median | SIMD | 45.7601 |
+| 250000 px | median | OCL | 22.2381 |
+| 250000 px | edges | Seq | 21.1292 |
+| 250000 px | edges | OMP | 4.8346 |
+| 250000 px | edges | SIMD | 19.1209 |
+| 250000 px | edges | OCL | 21.5889 |
+| 360000 px | inversion | Seq | 1.6076 |
+| 360000 px | inversion | OMP | 1.0441 |
+| 360000 px | inversion | SIMD | 0.5667 |
+| 360000 px | inversion | OCL | 21.9916 |
+| 360000 px | median | Seq | 240.9147 |
+| 360000 px | median | OMP | 36.5711 |
+| 360000 px | median | SIMD | 49.5063 |
+| 360000 px | median | OCL | 22.8087 |
+| 360000 px | edges | Seq | 30.7749 |
+| 360000 px | edges | OMP | 6.5096 |
+| 360000 px | edges | SIMD | 27.9681 |
+| 360000 px | edges | OCL | 22.0770 |
+| 902500 px | inversion | Seq | 4.1202 |
+| 902500 px | inversion | OMP | 1.8223 |
+| 902500 px | inversion | SIMD | 1.3792 |
+| 902500 px | inversion | OCL | 23.9927 |
+| 902500 px | median | Seq | 664.4517 |
+| 902500 px | median | OMP | 92.2152 |
+| 902500 px | median | SIMD | 233.9667 |
+| 902500 px | median | OCL | 25.4513 |
+| 902500 px | edges | Seq | 78.5577 |
+| 902500 px | edges | OMP | 15.8075 |
+| 902500 px | edges | SIMD | 71.1267 |
+| 902500 px | edges | OCL | 23.7418 |
+| 5760000 px | inversion | Seq | 27.5155 |
+| 5760000 px | inversion | OMP | 5.2842 |
+| 5760000 px | inversion | SIMD | 9.2301 |
+| 5760000 px | inversion | OCL | 33.7574 |
+| 5760000 px | median | Seq | 4297.9267 |
+| 5760000 px | median | OMP | 531.8907 |
+| 5760000 px | median | SIMD | 1435.8433 |
+| 5760000 px | median | OCL | 38.7149 |
+| 5760000 px | edges | Seq | 512.1587 |
+| 5760000 px | edges | OMP | 93.1576 |
+| 5760000 px | edges | SIMD | 460.8023 |
+| 5760000 px | edges | OCL | 28.9831 |
+
+## 2. Графики производительности
+### Инверсия
+![Inversion Chart](chart_inversion.svg)
+### Медианный фильтр
+![Median Chart](chart_median.svg)
+### Обнаружение границ
+![Edges Chart](chart_edges.svg)
+
+## 3. Выводы
+- **OpenCL** показывает лучшие результаты на больших данных благодаря разовой инициализации.
+- **SIMD** эффективен для простых потоковых операций.
+- **OpenMP** обеспечивает стабильное масштабирование на CPU.

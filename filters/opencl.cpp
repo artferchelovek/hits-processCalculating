@@ -13,89 +13,97 @@
 
 using namespace std;
 
-void checkError(cl_int err, const char* operation) {
+static cl_platform_id ocl_platform;
+static cl_device_id ocl_device;
+static cl_context ocl_context = nullptr;
+static cl_command_queue ocl_queue = nullptr;
+static cl_program ocl_program = nullptr;
+
+static void checkError(cl_int err, const char* operation) {
     if (err != CL_SUCCESS) {
         cerr << "Ошибка OpenCL во время " << operation << ": " << err << endl;
         exit(1);
     }
 }
 
-string readKernelSource(const string& filePath) {
+static string readKernelSource(const string& filePath) {
     ifstream file(filePath);
-    if (!file.is_open()) {
-        cerr << "Не удалось открыть файл кернела: " << filePath << endl;
-        return "";
-    }
+    if (!file.is_open()) return "";
     stringstream ss;
     ss << file.rdbuf();
     return ss.str();
 }
 
-unsigned char* runOCLFilter(const string& kernelName, const unsigned char* data, int width, int height, int channels) {
-    int size = width * height * channels;
-    unsigned char* result = new unsigned char[size];
+bool initOpenCL() {
     cl_int err;
+    err = clGetPlatformIDs(1, &ocl_platform, NULL);
+    if (err != CL_SUCCESS) return false;
 
-    cl_platform_id platform;
-    checkError(clGetPlatformIDs(1, &platform, NULL), "clGetPlatformIDs");
+    err = clGetDeviceIDs(ocl_platform, CL_DEVICE_TYPE_GPU, 1, &ocl_device, NULL);
+    if (err != CL_SUCCESS) return false;
 
-    cl_device_id device;
-    checkError(clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device, NULL), "clGetDeviceIDs");
-
-    cl_context context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
+    ocl_context = clCreateContext(NULL, 1, &ocl_device, NULL, NULL, &err);
     checkError(err, "clCreateContext");
 
-    cl_command_queue queue = clCreateCommandQueue(context, device, 0, &err);
+    ocl_queue = clCreateCommandQueue(ocl_context, ocl_device, 0, &err);
     checkError(err, "clCreateCommandQueue");
 
     string source = readKernelSource("filters/kernels.cl");
     const char* sourcePtr = source.c_str();
-    cl_program program = clCreateProgramWithSource(context, 1, &sourcePtr, NULL, &err);
+    ocl_program = clCreateProgramWithSource(ocl_context, 1, &sourcePtr, NULL, &err);
     checkError(err, "clCreateProgramWithSource");
 
-    err = clBuildProgram(program, 1, &device, NULL, NULL, NULL);
+    err = clBuildProgram(ocl_program, 1, &ocl_device, NULL, NULL, NULL);
     if (err != CL_SUCCESS) {
         char log[4096];
-        clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, sizeof(log), log, NULL);
+        clGetProgramBuildInfo(ocl_program, ocl_device, CL_PROGRAM_BUILD_LOG, sizeof(log), log, NULL);
         cerr << "Ошибка компиляции кернела:\n" << log << endl;
-        exit(1);
+        return false;
     }
+    return true;
+}
 
-    cl_kernel kernel = clCreateKernel(program, kernelName.c_str(), &err);
+void cleanupOpenCL() {
+    if (ocl_program) clReleaseProgram(ocl_program);
+    if (ocl_queue) clReleaseCommandQueue(ocl_queue);
+    if (ocl_context) clReleaseContext(ocl_context);
+}
+
+static unsigned char* runOCLFilter(const string& kernelName, const unsigned char* data, int width, int height, int channels) {
+    int size = width * height * channels;
+    unsigned char* result = new unsigned char[size];
+    cl_int err;
+
+    cl_kernel kernel = clCreateKernel(ocl_program, kernelName.c_str(), &err);
     checkError(err, "clCreateKernel");
 
-    cl_mem inputBuffer = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, size, (void*)data, &err);
+    cl_mem inputBuffer = clCreateBuffer(ocl_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, size, (void*)data, &err);
     checkError(err, "clCreateBuffer (input)");
 
-    cl_mem outputBuffer = clCreateBuffer(context, CL_MEM_WRITE_ONLY, size, NULL, &err);
+    cl_mem outputBuffer = clCreateBuffer(ocl_context, CL_MEM_WRITE_ONLY, size, NULL, &err);
     checkError(err, "clCreateBuffer (output)");
 
     if (kernelName == "inversion_kernel") {
         clSetKernelArg(kernel, 0, sizeof(cl_mem), &inputBuffer);
         clSetKernelArg(kernel, 1, sizeof(cl_mem), &outputBuffer);
         clSetKernelArg(kernel, 2, sizeof(int), &channels);
-
         size_t globalSize = size;
-        checkError(clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &globalSize, NULL, 0, NULL, NULL), "clEnqueueNDRangeKernel");
+        checkError(clEnqueueNDRangeKernel(ocl_queue, kernel, 1, NULL, &globalSize, NULL, 0, NULL, NULL), "clEnqueueNDRangeKernel");
     } else {
         clSetKernelArg(kernel, 0, sizeof(cl_mem), &inputBuffer);
         clSetKernelArg(kernel, 1, sizeof(cl_mem), &outputBuffer);
         clSetKernelArg(kernel, 2, sizeof(int), &width);
         clSetKernelArg(kernel, 3, sizeof(int), &height);
         clSetKernelArg(kernel, 4, sizeof(int), &channels);
-
         size_t globalSize[2] = {(size_t)width, (size_t)height};
-        checkError(clEnqueueNDRangeKernel(queue, kernel, 2, NULL, globalSize, NULL, 0, NULL, NULL), "clEnqueueNDRangeKernel");
+        checkError(clEnqueueNDRangeKernel(ocl_queue, kernel, 2, NULL, globalSize, NULL, 0, NULL, NULL), "clEnqueueNDRangeKernel");
     }
 
-    checkError(clEnqueueReadBuffer(queue, outputBuffer, CL_TRUE, 0, size, result, 0, NULL, NULL), "clEnqueueReadBuffer");
+    checkError(clEnqueueReadBuffer(ocl_queue, outputBuffer, CL_TRUE, 0, size, result, 0, NULL, NULL), "clEnqueueReadBuffer");
 
     clReleaseMemObject(inputBuffer);
     clReleaseMemObject(outputBuffer);
     clReleaseKernel(kernel);
-    clReleaseProgram(program);
-    clReleaseCommandQueue(queue);
-    clReleaseContext(context);
 
     return result;
 }
